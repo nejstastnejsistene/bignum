@@ -13,6 +13,12 @@ void test_mul(digit_t x, digit_t y) {
     printf("0x%x << 32 | 0x%x\n", hi, lo);
 }
 
+/* Convert a string to bignum, and back to a string. */
+void test_stringify(char *s, int base) {
+    bignum *x = from_string(s, base);
+    printf("0b%s\n", to_string(x, base));
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "Usage: ./test <name> <args...>\n");
@@ -20,10 +26,16 @@ int main(int argc, char *argv[]) {
     }
     if (strcmp(argv[1], "mul") == 0) {
         if (argc != 4) {
-            fprintf(stderr, "Usage: ./test mul x y\n");
+            fprintf(stderr, "Usage: ./test mul <x> <y>\n");
             exit(2);
         }
         test_mul(atoi(argv[2]), atoi(argv[3])); 
+    } else if (strcmp(argv[1], "stringify") == 0) {
+        if (argc != 4) {
+            fprintf(stderr, "Usage: ./test stringify <string> <base>\n");
+            exit(2);
+        }
+        test_stringify(argv[2], atoi(argv[3]));
     } else {
         fprintf(stderr, "Unrecognized command\n");
         exit(2);

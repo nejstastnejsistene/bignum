@@ -9,7 +9,13 @@
  */
 #define digit_t uint32_t
 
-/* Multiply two 32 bits and return the hi and lo result words. */
+typedef struct {
+    int num_digits;
+    digit_t *digits; // Big endian.
+} bignum;
+
+bignum *from_string(char *s, int base);
+char *to_string(bignum *x, int base);
 inline void mul(digit_t x, digit_t y, digit_t *hi, digit_t *lo);
 
 #endif
