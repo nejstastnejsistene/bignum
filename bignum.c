@@ -4,7 +4,7 @@
 
 #include "bignum.h"
 
-bignum *new(int num_digits) {
+bignum *new_bignum(int num_digits) {
     bignum *x = malloc(sizeof(bignum));
     if (!x) {
         perror("Error allocating bignum");
@@ -28,7 +28,7 @@ bignum *from_string(char *s, int base) {
         extrabit = msd > 0; // Whether to handle a special case first digit.
 
         // Allocate bignum.
-        val = new(len / 32 + extrabit);
+        val = new_bignum(len / 32 + extrabit);
 
         // Set the most significant digit from the leading bits.
         for (i = 0; i < msd; i++) {
@@ -77,7 +77,8 @@ char *to_string(bignum *x, int base) {
    } 
 }
 
-bignum *bignum_add(bignum *x, bignum *y) {
+/* Add two bignums together. */
+bignum *add(bignum *x, bignum *y) {
     int num_digits, i;
     digit_t tmp1, tmp2, hi, lo;
     bignum *val;
@@ -88,14 +89,14 @@ bignum *bignum_add(bignum *x, bignum *y) {
             ((uint64_t)x->digits[0] + (uint64_t)y->digits[0]) >> 32) {
         num_digits++;
     }
-    val = new(num_digits);
+    val = new_bignum(num_digits);
 
     hi = 0;
     for (i = 0; i < num_digits; i++) {
         tmp1 = x->num_digits - i > 0 ? x->digits[x->num_digits - i - 1] : 0;
         tmp2 = y->num_digits - i > 0 ? y->digits[y->num_digits - i - 1] : 0;
         lo = 0;
-        add3(hi, tmp1, tmp2, &hi, &lo);
+        _add3(hi, tmp1, tmp2, &hi, &lo);
         // Set the current digit.
         val->digits[val->num_digits - i - 1] = lo;
         // The contents of hi are carried to the next digit.
@@ -104,19 +105,19 @@ bignum *bignum_add(bignum *x, bignum *y) {
 }
 
 /* Add two 32 bits and return the hi and lo result words. */
-inline void add(digit_t x, digit_t y, digit_t *hi, digit_t *lo) {
-    add3(x, y, 0, hi, lo);
+inline void _add(digit_t x, digit_t y, digit_t *hi, digit_t *lo) {
+    _add3(x, y, 0, hi, lo);
 }
 
 /* Add three 32 bits and return the hi and lo result words. */
-inline void add3(digit_t x, digit_t y, digit_t z, digit_t *hi, digit_t *lo) {
+inline void _add3(digit_t x, digit_t y, digit_t z, digit_t *hi, digit_t *lo) {
     uint64_t xy = (uint64_t)x + (uint64_t)y + (uint64_t)z; 
     *hi = xy >> 32;
     *lo = xy;
 }
 
 /* Multiply two 32 bits and return the hi and lo result words. */
-inline void mul(digit_t x, digit_t y, digit_t *hi, digit_t *lo) {
+inline void _mul(digit_t x, digit_t y, digit_t *hi, digit_t *lo) {
     uint64_t xy = (uint64_t)x * (uint64_t)y; 
     *hi = xy >> 32;
     *lo = xy;

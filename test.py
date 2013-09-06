@@ -16,11 +16,12 @@ def test_stringify():
             assert x == eval(result) and bin(x) == result, x
 
 def test_add():
+    '''Test arbitrary precision addition.'''
     for i in range(1, 20):
         for j in range(20):
             x = getrandbits(32*i)
             y = getrandbits(32*i)
-            cmd = './test bignum_add {} {}'.format(bin(x)[2:], bin(y)[2:])
+            cmd = './test add {} {}'.format(bin(x)[2:], bin(y)[2:])
             assert x + y== eval(getoutput(cmd))
 
 def test_ops():
@@ -32,7 +33,7 @@ def test_ops():
                 x = getrandbits(32)
                 y = getrandbits(32)
                 xy = op(x, y)
-                cmd = './test {} {} {}'.format(opname, x, y)
+                cmd = './test {}_op {} {}'.format(opname, x, y)
                 assert xy == eval(getoutput(cmd)), (x, y)
 
 

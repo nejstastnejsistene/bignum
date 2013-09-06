@@ -16,11 +16,12 @@ typedef struct {
     digit_t *digits; // Big endian.
 } bignum;
 
+bignum *new_bignum(int num_digits);
 bignum *from_string(char *s, int base);
 char *to_string(bignum *x, int base);
-bignum *bignum_add(bignum *x, bignum *y);
-inline void add(digit_t x, digit_t y, digit_t *hi, digit_t *lo);
-inline void add3(digit_t x, digit_t y, digit_t z, digit_t *hi, digit_t *lo);
-inline void mul(digit_t x, digit_t y, digit_t *hi, digit_t *lo);
+bignum *add(bignum *x, bignum *y);
+inline void _add(digit_t x, digit_t y, digit_t *hi, digit_t *lo);
+inline void _add3(digit_t x, digit_t y, digit_t z, digit_t *hi, digit_t *lo);
+inline void _mul(digit_t x, digit_t y, digit_t *hi, digit_t *lo);
 
 #endif
