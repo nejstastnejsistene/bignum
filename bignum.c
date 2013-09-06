@@ -1,7 +1,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
 #include "bignum.h"
+
+bignum *new(int num_digits) {
+    bignum *x = malloc(sizeof(bignum));
+    if (!x) {
+        perror("Error allocating bignum");
+        exit(1);
+    }
+    x->num_digits = num_digits;
+    x->digits = malloc(sizeof(digit_t) * num_digits);
+    if (!x->digits) {
+        perror("Error allocating bignum");
+        exit(1);
+    }
+    return x;
+}
 
 bignum *from_string(char *s, int base) {
     if (base == 2) {
@@ -12,17 +28,7 @@ bignum *from_string(char *s, int base) {
         extrabit = msd > 0; // Whether to handle a special case first digit.
 
         // Allocate bignum.
-        val = malloc(sizeof(bignum));
-        if (!val) {
-            perror("Error allocating bignum");
-            exit(1);
-        }
-        val->num_digits = len / 32 + extrabit; 
-        val->digits = malloc(sizeof(digit_t) * val->num_digits);
-        if (!val->digits) {
-            perror("Error allocating bignum");
-            exit(1);
-        }
+        val = new(len / 32 + extrabit);
 
         // Set the most significant digit from the leading bits.
         for (i = 0; i < msd; i++) {
@@ -69,6 +75,44 @@ char *to_string(bignum *x, int base) {
    } else {
         return NULL;
    } 
+}
+
+bignum *bignum_add(bignum *x, bignum *y) {
+    int num_digits, i;
+    digit_t tmp1, tmp2, hi, lo;
+    bignum *val;
+
+    num_digits = MAX(x->num_digits, y->num_digits);
+    // Check if an additional digit will be required because of overflow.
+    if (x->num_digits == y->num_digits &&
+            ((uint64_t)x->digits[0] + (uint64_t)y->digits[0]) >> 32) {
+        num_digits++;
+    }
+    val = new(num_digits);
+
+    hi = 0;
+    for (i = 0; i < num_digits; i++) {
+        tmp1 = x->num_digits - i > 0 ? x->digits[x->num_digits - i - 1] : 0;
+        tmp2 = y->num_digits - i > 0 ? y->digits[y->num_digits - i - 1] : 0;
+        lo = 0;
+        add3(hi, tmp1, tmp2, &hi, &lo);
+        // Set the current digit.
+        val->digits[val->num_digits - i - 1] = lo;
+        // The contents of hi are carried to the next digit.
+    }
+    return val;
+}
+
+/* Add two 32 bits and return the hi and lo result words. */
+inline void add(digit_t x, digit_t y, digit_t *hi, digit_t *lo) {
+    add3(x, y, 0, hi, lo);
+}
+
+/* Add three 32 bits and return the hi and lo result words. */
+inline void add3(digit_t x, digit_t y, digit_t z, digit_t *hi, digit_t *lo) {
+    uint64_t xy = (uint64_t)x + (uint64_t)y + (uint64_t)z; 
+    *hi = xy >> 32;
+    *lo = xy;
 }
 
 /* Multiply two 32 bits and return the hi and lo result words. */

@@ -1,18 +1,10 @@
 #!/usr/bin/env python2
 
+import operator
 import sys
 from random import getrandbits
 from commands import getoutput
 
-
-def test_mul():
-    '''Test some arbitrary pairs of 32 bit numbers to multiply.'''
-    for i in range(20):
-        for j in range(20):
-            x = getrandbits(32)
-            y = getrandbits(32)
-            cmd = './test mul {} {}'.format(x, y)
-            assert x * y == eval(getoutput(cmd)), (x, y)
 
 def test_stringify():
     '''Test conversion to and from string to bignum in base 2.'''
@@ -22,6 +14,26 @@ def test_stringify():
             cmd = './test stringify {} {}'.format(bin(x)[2:], 2)
             result = getoutput(cmd)
             assert x == eval(result) and bin(x) == result, x
+
+def test_add():
+    for i in range(1, 20):
+        for j in range(20):
+            x = getrandbits(32*i)
+            y = getrandbits(32*i)
+            cmd = './test bignum_add {} {}'.format(bin(x)[2:], bin(y)[2:])
+            assert x + y== eval(getoutput(cmd))
+
+def test_ops():
+    '''Test some arbitrary pairs of 32 bit numbers to test arithmetic.'''
+    for opname in 'add mul'.split():
+        op = getattr(operator, opname)
+        for i in range(20):
+            for j in range(20):
+                x = getrandbits(32)
+                y = getrandbits(32)
+                xy = op(x, y)
+                cmd = './test {} {} {}'.format(opname, x, y)
+                assert xy == eval(getoutput(cmd)), (x, y)
 
 
 if __name__ == '__main__':
